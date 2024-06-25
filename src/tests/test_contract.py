@@ -62,7 +62,7 @@ async def declare_deploy_contract():
     # ACCOUNT: INVALID SIGNATURE HERE
 
     declare_transaction = await account.sign_declare_v3(
-    compiled_contract=compiled_contract_sierra, compiled_class_hash=casm_class_hash, auto_estimate=True
+    compiled_contract=compiled_contract_sierra, compiled_class_hash=casm_class_hash,auto_estimate= True
     )
     resp = await account.client.declare(transaction=declare_transaction)
     await account.client.wait_for_tx(resp.transaction_hash)
@@ -71,7 +71,7 @@ async def declare_deploy_contract():
     # ALSO FAILS WITH THIS LINE
 
     declare_result = await Contract.declare_v3(
-        account=account, compiled_contract=compiled_contract_sierra,compiled_class_hash=casm_class_hash,auto_estimate=True
+        account=account, compiled_contract=compiled_contract_sierra,compiled_contract_casm=compiled_contract_casm,auto_estimate=True
     )
     # Wait for the transaction
     await declare_result.wait_for_acceptance()
