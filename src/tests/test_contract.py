@@ -12,7 +12,7 @@ from starknet_py.common import create_casm_class
 from starknet_py.hash.casm_class_hash import compute_casm_class_hash
 
 
-# PREFUNDED CONFIGURATION FROM KATANA
+# PREFUNDED CONFIGURATION FROM KATANA (TO BE MODIFIED)
 
 PRIVATE_KEY = "0x2bbf4f9fd0bbb2e60b0316c1fe0b76cf7a4d0198bd493ced9b8df2a3a24d68a"
 PUBLIC_KEY = "0x640466ebd2ce505209d3e5c4494b4276ed8f1cde764d757eb48831961f7cdea"
@@ -24,7 +24,7 @@ def read_contract(file_name: str) -> str:
     """
     Return contents of file_name from directory.
     """
-    file_path = Path("pragma-sdk/contracts/target/dev") / file_name
+    file_path = Path("src/contracts/target/dev") / file_name
     return file_path.read_text("utf-8")
 
 

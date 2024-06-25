@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pragma-sdk"
+name = "src"
 version = "0.1.0"
 description = ""
 authors = ["JordyRo1 <jordy.romu@orange.fr>"]
