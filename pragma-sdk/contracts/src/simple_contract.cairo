@@ -8,9 +8,17 @@ trait Interface<TContractState> {
 #[starknet::contract]
 mod simple_contract{
     use super::Interface;
+
+
     #[storage]
     struct Storage {
+        index : u32, 
         is_bool: bool
+    }
+
+    #[constructor]
+    fn constructor(ref self: ContractState, index: u32){
+        self.index.write(index);
     }
 
     #[abi(embed_v0)]

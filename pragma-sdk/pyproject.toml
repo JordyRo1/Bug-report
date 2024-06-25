@@ -6,7 +6,8 @@ authors = ["JordyRo1 <jordy.romu@orange.fr>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.8,<3.13"
+starknet-py = "0.21.0"
 
 
 [build-system]

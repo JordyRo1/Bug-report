@@ -7,14 +7,17 @@ from starknet_py.net.models import StarknetChainId
 from starknet_py.contract import Contract
 import asyncio
 from pathlib import Path
+from starknet_py.net.client_models import ResourceBounds
+from starknet_py.common import create_casm_class
+from starknet_py.hash.casm_class_hash import compute_casm_class_hash
 
 
 # PREFUNDED CONFIGURATION FROM KATANA
 
-PRIVATE_KEY = '0x2bbf4f9fd0bbb2e60b0316c1fe0b76cf7a4d0198bd493ced9b8df2a3a24d68a'
-PUBLIC_KEY = '0x640466ebd2ce505209d3e5c4494b4276ed8f1cde764d757eb48831961f7cdea'
-ACCOUNT_ADDRESS = '0xb3ff441a68610b30fd5e2abbf3a1548eb6ba6f3559f2862bf2dc757e5828ca'
-RPC_URL =  'http://0.0.0.0:5050'
+PRIVATE_KEY = "0x2bbf4f9fd0bbb2e60b0316c1fe0b76cf7a4d0198bd493ced9b8df2a3a24d68a"
+PUBLIC_KEY = "0x640466ebd2ce505209d3e5c4494b4276ed8f1cde764d757eb48831961f7cdea"
+ACCOUNT_ADDRESS = "0xb3ff441a68610b30fd5e2abbf3a1548eb6ba6f3559f2862bf2dc757e5828ca"
+RPC_URL =  "http://0.0.0.0:5050"
 
 
 def read_contract(file_name: str) -> str:
@@ -31,7 +34,6 @@ async def get_account():
     # First, make sure to generate private key and salt
 
     key_pair = KeyPair.from_private_key(int(PRIVATE_KEY, 16))
-
     # Prefund the address (using the token bridge or by sending fee tokens to the computed address)
     # Make sure the tx has been accepted on L2 before proceeding
 
@@ -39,7 +41,7 @@ async def get_account():
     client = FullNodeClient(node_url=RPC_URL)
 
     return Account(
-        address=  int(ACCOUNT_ADDRESS, 16), 
+        address= ACCOUNT_ADDRESS, 
         client= client, 
         key_pair= key_pair,
         chain= StarknetChainId.MAINNET
@@ -48,33 +50,43 @@ async def get_account():
 async def declare_deploy_contract(): 
     account = await get_account()
 
-    compiled_contract_sierra = read_contract("contracts_simple_contract.contract_class.json")
-    compiled_contract_casm = read_contract("contracts_simple_contract.compiled_contract_class.json")
+    compiled_contract_sierra = read_contract("contract_simple_contract.sierra.json")
+    compiled_contract_casm = read_contract("contract_simple_contract.casm.json")
+
+    # contract_compiled_casm is a string containing the content of the starknet-sierra-compile (.casm file)
+    casm_class = create_casm_class(compiled_contract_casm)
+
+    # Compute Casm class hash
+    casm_class_hash = compute_casm_class_hash(casm_class)
+
+    # ACCOUNT: INVALID SIGNATURE HERE
 
     declare_transaction = await account.sign_declare_v3(
-    compiled_contract=compiled_contract_sierra, compiled_class_hash=compiled_contract_casm, auto_estimate=True
+    compiled_contract=compiled_contract_sierra, compiled_class_hash=casm_class_hash, auto_estimate=True
     )
     resp = await account.client.declare(transaction=declare_transaction)
     await account.client.wait_for_tx(resp.transaction_hash)
 
-    # To declare through Contract class you have to compile a contract and pass it
-    # to Contract.declare_v1 or Contract.declare_v3
+
+    # ALSO FAILS WITH THIS LINE
+
     declare_result = await Contract.declare_v3(
-        account=account, compiled_contract=compiled_contract_sierra,compiled_class_hash=compiled_contract_casm,auto_estimate=True
+        account=account, compiled_contract=compiled_contract_sierra,compiled_class_hash=casm_class_hash,auto_estimate=True
     )
     # Wait for the transaction
     await declare_result.wait_for_acceptance()
 
-    # After contract is declared it can be deployed
-    deploy_result = await declare_result.deploy_v3(auto_estimate=True)
-    await deploy_result.wait_for_acceptance()
 
-    # You can pass more arguments to the `deploy` method. Check `API` section to learn more
 
-    # To interact with just deployed contract get its instance from the deploy_result
-    contract = deploy_result.deployed_contract
+    # deploy_result = await declare_result.deploy_v3(auto_estimate=True)
+    # await deploy_result.wait_for_acceptance()
 
-    return  contract.deployed_contract
+    # # You can pass more arguments to the `deploy` method. Check `API` section to learn more
+
+    # # To interact with just deployed contract get its instance from the deploy_result
+    # contract = deploy_result.deployed_contract
+
+    # return  contract.deployed_contract
 
 
 
